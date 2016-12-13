@@ -1,3 +1,4 @@
+
 function Directive(name,args,onBuild,onRender){
     this.name = name;
     this.args = args;
@@ -48,7 +49,7 @@ var directives = [
             this.childViews.forEach(function(childView,i){
                 $children = $children.add(childView.el)
             }.bind(this));
-            this.$children.wrapAll('<div/>').parent().empty().append($children)
+            this.$children.parent().empty().append($children)
             this.$children = $children;
         }),
     
