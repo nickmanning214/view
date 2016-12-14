@@ -28,7 +28,7 @@ var directives = [
                     model:model,
                     mappings:mappings,
                     index:i,
-                    lastIndex:collection.length - i
+                    lastIndex:collection.length - i - 1
                 });
                 return childview;
             });
@@ -47,7 +47,7 @@ var directives = [
                     model:collection.models[i],
                     mappings:mappings,
                     index:i,
-                    lastIndex:collection.length - i
+                    lastIndex:collection.length - i - 1
                 }))
             }
             var $children = $();
