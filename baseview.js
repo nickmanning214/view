@@ -68,7 +68,6 @@ var directives = [
         "optional",
         function(){return [this.viewModel.get(arguments[0])]},
         function(truth,el){
-            //This doesn't work. Probably something to do with string manipulation.
             if (!truth) $(el).hide()
             else $(el).show();
         },
