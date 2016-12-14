@@ -93,7 +93,7 @@ directives.cycle = function(view,functionName){
 
 
 var backboneViewOptions = ['model', 'collection', 'el', 'id', 'attributes', 'className', 'tagName', 'events'];
-var additionalViewOptions = ['mappings','templateString','childViewImports','subViewImports','index']
+var additionalViewOptions = ['mappings','templateString','childViewImports','subViewImports','index','lastIndex']
 var BaseView = Backbone.View.extend({
     constructor:function(options) {
         this.cid = _.uniqueId(this.tplid);
