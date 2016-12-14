@@ -27,7 +27,8 @@ var directives = [
                 var childview = new ChildView({
                     model:model,
                     mappings:mappings,
-                    index:i
+                    index:i,
+                    lastIndex:collection.length - i
                 });
                 return childview;
             });
@@ -45,7 +46,8 @@ var directives = [
                 this.childViews.push(new ChildView({
                     model:collection.models[i],
                     mappings:mappings,
-                    index:i
+                    index:i,
+                    lastIndex:collection.length - i
                 }))
             }
             var $children = $();
