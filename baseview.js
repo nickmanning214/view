@@ -42,19 +42,25 @@ var directives = [
             this.$children = $children
         },
         function(collection,ChildView,mappings){
+            
+            this.childViews.forEach(function(childView,i){
+                childView.lastIndex = collection.length - i - 1;
+                childView.el.className = childView.className();
+            });
+
             for(var i=this.childViews.length;i<collection.length;i++){
                 this.childViews.push(new ChildView({
                     model:collection.models[i],
                     mappings:mappings,
                     index:i,
                     lastIndex:collection.length - i - 1
-                }))
+                }));
             }
             var $children = $();
             this.childViews.forEach(function(childView,i){
                 $children = $children.add(childView.el)
             }.bind(this));
-            this.$children.parent().empty().append($children)
+            this.$children.parent().empty().append($children);
             this.$children = $children;
         }),
     
