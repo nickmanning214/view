@@ -94,8 +94,8 @@ var backboneViewOptions = ['model', 'collection', 'el', 'id', 'attributes', 'cla
 var additionalViewOptions = ['mappings','templateString','childViewImports','subViewImports','index']
 var BaseView = Backbone.View.extend({
     constructor:function(options) {
-        this.cid = _.uniqueId(this.id);
-        this.templateString = $("#"+this.id).html();
+        this.cid = _.uniqueId(this.tplid);
+        this.templateString = $("#"+this.tplid).html();
 
         _.extend(this, _.pick(options, backboneViewOptions.concat(additionalViewOptions)));
 
