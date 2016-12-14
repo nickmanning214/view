@@ -22,18 +22,20 @@ var directives = [
         "map",
         function(){return [this.viewModel.get(arguments[0]),this.childViewImports[arguments[1]],this.mappings[arguments[1]]]},
         function(collection,ChildView,mappings,el,nmmapcollection,nmmapview){
-            this.childViews = collection.map(function(model){
+            this.childViews = collection.map(function(model,i){
                 
                 var childview = new ChildView({
                     model:model,
-                    mappings:mappings
+                    mappings:mappings,
+                    index:i
                 });
                 return childview;
             });
 
             var $children = $();
-            this.childViews.forEach(function(childView){
+            this.childViews.forEach(function(childView,i){
                 $children = $children.add(childView.el)
+                childView.index = i;
             }.bind(this));
             $(el).replaceWith($children);
             this.$children = $children
@@ -42,7 +44,8 @@ var directives = [
             for(var i=this.childViews.length;i<collection.length;i++){
                 this.childViews.push(new ChildView({
                     model:collection.models[i],
-                    mappings:mappings
+                    mappings:mappings,
+                    index:i
                 }))
             }
             var $children = $();
@@ -88,7 +91,7 @@ directives.cycle = function(view,functionName){
 
 
 var backboneViewOptions = ['model', 'collection', 'el', 'id', 'attributes', 'className', 'tagName', 'events'];
-var additionalViewOptions = ['mappings','templateString','childViewImports','subViewImports']
+var additionalViewOptions = ['mappings','templateString','childViewImports','subViewImports','index']
 var BaseView = Backbone.View.extend({
     constructor:function(options) {
         this.cid = _.uniqueId(this.id);
@@ -164,11 +167,7 @@ var BaseView = Backbone.View.extend({
         
     
     },
-    build:function(){
-        
-        
-
-                
+    build:function(){  
         directives.cycle(this,"onBuild")
         this.delegateEvents();
     },
