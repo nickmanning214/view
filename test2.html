@@ -1,0 +1,98 @@
+<html>
+    <head></head>
+    <body>
+        <div id="loading">Loading...</div>
+        <script src="teams.js"></script>
+        <script src="jquery.js"></script>
+        <script src="underscore.js"></script>
+        <script src="underscore-extend.js"></script>
+        <script src="backbone.js"></script>
+        <script src="BaseView.js"></script>
+        
+        <script id="maintpl" type="text/underscore">
+            <h1 nm-content="h1"></h1>
+            <div class="obligatory-wrapper">
+                <section nm-map="collection:Item"></section>
+            </div>
+            <div nm-subview="Button"></div>
+        </script>
+        <script id="childtpl" type="text/underscore">
+            <p nm-content='content'>Did not work</p>
+        </script>
+        <script id="buttontpl" type="text/underscore">
+            <button>Add</button>
+        </script>
+        
+        <script>
+            var Division = Backbone.Model.extend({
+                initialize:function(){
+                    this.set("teams",new Backbone.Collection(this.get("teams")));
+                }
+            })
+            var DivisionExtend = Division.extend({
+                
+                initialize:function(){
+                    Division.prototype.initialize.apply(this,arguments);
+                    this.set("currentTeams",new Backbone.Collection(this.get("teams").first()))
+                }
+            });
+            var division = new DivisionExtend(division);
+
+            var Button = BaseView.extend({
+                tagName:"div",
+                tplid:"buttontpl",
+                events:{
+                    "click button":function(){
+                        view.model.get("currentTeams").reset(view.model.get("teams").models.slice(0,view.model.get("currentTeams").length+1));
+
+                        console.log(view.model.get("currentTeams").models)
+                    }
+                }
+            })
+
+            var ItemView = BaseView.extend({
+                className:function(){
+                    return "ooooo"+this.index
+                },
+                tagName:"div",
+                tplid:"childtpl",
+                defaults:{
+                    content:"This is the default content."
+                }
+            })
+
+            var View = BaseView.extend({
+                tagName:"section",
+                tplid:"maintpl"
+            });
+
+
+
+            var view = new View({
+                model:division,
+                mappings:{
+                    h1:"name",
+                    collection:"currentTeams",
+                    Item:{
+                        content:"mascot"
+                    }
+                },
+                childViewImports:{
+                    Item:ItemView
+                },
+                subViewImports:{
+                    Button:Button
+                }
+            });
+
+            $("#loading").replaceWith(view.el)
+
+            view.listenTo(view.model.get("currentTeams"),"add reset",function(){
+                this.render()
+            })
+
+
+        </script>
+        
+    </body>
+</html>

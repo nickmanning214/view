@@ -19,7 +19,7 @@ var directives = [
         function(arr,el){arr.forEach(function(html,i){$(el).find("span").eq(i).html(html);})
         }),
     new Directive(
-        "map",
+        "map",//Note: this is currently required to have a wrapper.
         function(){return [this.viewModel.get(arguments[0]),this.childViewImports[arguments[1]],this.mappings[arguments[1]]]},
         function(collection,ChildView,mappings,el,nmmapcollection,nmmapview){
             this.childViews = collection.map(function(model,i){
@@ -45,7 +45,8 @@ var directives = [
             
             this.childViews.forEach(function(childView,i){
                 childView.lastIndex = collection.length - i - 1;
-                childView.el.className = childView.className();
+                var className = _.result(childView,"className");
+                if(className)childView.el.className = className;
             });
 
             for(var i=this.childViews.length;i<collection.length;i++){
@@ -63,6 +64,20 @@ var directives = [
             this.$children.parent().empty().append($children);
             this.$children = $children;
         }),
+    new Directive(
+        "optional",
+        function(){return [this.viewModel.get(arguments[0])]},
+        function(truth,el){
+            //This doesn't work. Probably something to do with string manipulation.
+            if (!truth) $(el).hide()
+            else $(el).show();
+        },
+        function(truth,el){
+            console.log(truth)
+            if (!truth) $(el).hide()
+            else $(el).show();
+        }
+    ),
     
         //This has to come last so that childviews directives are not read by parent (I think) 
     new Directive(

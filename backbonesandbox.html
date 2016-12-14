@@ -1,0 +1,117 @@
+<html>
+    <head>
+        <style>
+            nav span{cursor:pointer;
+  -webkit-user-select: none;  /* Chrome all / Safari all */
+  -moz-user-select: none;     /* Firefox all */
+  -ms-user-select: none;      /* IE 10+ */
+  user-select: none;          /* Likely future */      
+}
+            nav .selected{color:green}
+        </style>
+    </head>
+    <body>
+        <div class="placeholder">Loading...</div>
+        <script src="jquery.js"></script>
+        <script src="underscore.js"></script>
+        <script src="underscore-extend.js"></script>
+        <script src="backbone.js"></script>
+        <script src="BaseView.js"></script>
+        <script src="Nav.js"></script>
+        <script src="Header.js"></script>
+        <script src="Section.js"></script>
+        <script src="Section.js"></script>
+        <script>
+        
+            //Controller
+
+            //Current issue: You need the links to work.
+            //There is an invalid value for Nav "links". It has to be a property of the model.
+
+
+            //Hard data.
+            var people = new Backbone.Collection([
+                {
+                    name:"Nick",
+                    bio:"A person from Latham, NY."
+                },
+                {
+                    name:"Bob",
+                    bio:"A person from Philly, PA"
+                },
+                {
+                    name:"George",
+                    bio:"A person from Edmonton"
+                }
+            ]);
+           
+           var model = new Backbone.Model(people.at(0).attributes);
+
+
+            //View
+            var view = new Section({
+             
+
+                //you can include model here but not view model because of built in viewOptions 
+                //which picks and chooses in the constructor _.extend(this, _.pick(options, viewOptions));
+                //But you have the model and you have the mapping of the viewmodel, 
+                //so theoretically you should be able to call this.model.get(this.mappings[variableYouNeed])
+                //Actually you can't do that. Is this an instance where you need to put these things in the prototype? (Shouldn't be')
+
+                //Other options: override backbone view constructor (but I might as well make my own library then? Still it'd work fine')
+                //className is for base classes and you can add other classes later in a different function
+
+                //I think the answer is to override the constructor. Backbone encourages this, and viewModel is essentially a "special option" like model, collection, el, id, className, tagName, attributes and events (from backbone docs).
+
+                //Send a model so that you can map template vars to model vars.
+                //Subview's tempatevars are also mapped to this model's vars
+                model:model,
+
+               
+                
+                
+                //Map template variables to model variables 
+                //str:str->templateVar:modelVar
+                //str:obj->subView:{templateVar:modelVar}
+                //These no longer go directly into the template. Instead they go into the viewModel, then go into the template with directives
+                mappings:{
+                    "Header":{
+                        'h1-content':"name",//This is a template variable. Can you put current.name or something?
+                        "Nav":{
+                            "links":function(){return ["Work",Math.random(),"Work"]}
+                            //The reason this only works once is because the template is only built once. You need to use a directive instead of an underscore template
+                        }
+                    },
+                    'section-content':"bio"/*,
+                    'section-content':function(){//function works, but functions are updated on every model set. 
+                        return this.model.get("bio")
+                    }*/
+                },
+                
+
+
+                //Events. Listen to subviews, update the model
+                events:{
+                    "select,switch nav":function(event,args){
+                        console.log(" ");
+                        console.log("====BEGIN EVENT====")
+
+                        this.model.set(people.at(args.index).attributes);
+                        //Render: Replace placeholder with this, render template string, render the children, delegate events
+                        console.log("====END EVENT====")
+                        console.log(" ");
+                    }
+                }
+            
+        
+        });
+
+
+
+$("div.placeholder").replaceWith(view.el)
+        
+           
+
+        </script>
+    </body>
+</html>

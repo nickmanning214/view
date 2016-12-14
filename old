@@ -1,0 +1,41 @@
+ //viewModel listen to model, update accordingly
+        //Try to get this to support nested models.
+        //Why does deleting this make the code still work lol
+        this.viewModel.listenTo(this.model,"set",function(model){
+            console.log("2")
+            var changedModelAttributes = model.changedAttributes().keys();
+            console.log(changedModelAttributes);
+            console.log(this.propMap)
+            changedModelAttributes.forEach(function(changedModelAttribute){
+                for (viewVariable in propMap){
+                    var obj = {};
+                    if (propMap[viewVariable]==changedModelAttribute) {
+                        obj[viewVariable] = changedModelAttributes[changedModelAttribute]
+                        this.set(obj);
+                    }
+                }
+            }.bind(this))
+        });
+
+
+
+
+////////////////////////////////////////////////////////////////
+
+
+  //This is triggered when a model changes.
+
+        //Goal: support nested models here.
+
+        //Get the model's changed attributes (allow for all attributes)
+        var attributes;
+        if (changedOnly) attributes =  model.changedAttributes();
+        else attributes = model.attributes;
+
+        //Get the model keys
+        var changedModelKeys = Object.keys(attributes);
+        
+        //Get the mapping of template variables to model variables, filtering out unchanged model variables
+        var propMap = _.hash_filter(this.propMap,function(modelVar){
+            return _.contains(changedModelKeys,modelVar)
+        });

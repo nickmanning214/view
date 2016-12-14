@@ -1,0 +1,62 @@
+<html>
+    <head></head>
+    <body>
+        <div id="loading">Loading...</div>
+        <script src="teams.js"></script>
+        <script src="jquery.js"></script>
+        <script src="underscore.js"></script>
+        <script src="underscore-extend.js"></script>
+        <script src="backbone.js"></script>
+        <script src="BaseView.js"></script>
+        <script id="deflisttpl" type="text/underscore">
+            <div class="obligatory-wrapper">
+                <div nm-map='definition:Definition'></div>
+            </div>
+            <div nm-optional="yo">Hello</div>
+        </script>
+         <script id="deftpl" type="text/underscore">
+            <dt><%= prop %></dt><dd><%= val %></dd>
+        </script>
+        <script>
+            
+
+            var DefinitionList = BaseView.extend({
+                tagName:"section",
+                tplid:"deflisttpl",
+    
+                childViewImports:{
+                    Definition:BaseView.extend({
+                        tagName:"dl",
+                        defaults:{
+                            prop:"Default dt",
+                            val:"Default dd"
+                        },
+                        tplid:"deftpl",
+                    })
+                }
+            });
+
+            var view = new DefinitionList({
+                model:new Backbone.Model({
+                    teams:new Backbone.Collection(teams)
+                }),
+                mappings:{
+                    yo:function(){return Math.floor(Math.random()*2)},
+                    definition:"teams",//collection with childview
+                    Definition:{//childview so child model is attached
+                        prop:function(){
+                            return this.model.get("city")
+                        },
+                        val:function(){
+                            return this.model.get("mascot")
+                        }
+                    }
+                    
+                }
+            });
+            
+            $("#loading").replaceWith(view.el)
+        </script>
+        
+    </body>
+</html>
