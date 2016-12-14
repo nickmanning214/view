@@ -66,15 +66,17 @@ var directives = [
         }),
     new Directive(
         "optional",
-        function(){return [this.viewModel.get(arguments[0])]},
-        function(truth,el){
-            if (!truth) $(el).hide()
-            else $(el).show();
+        function(){
+            return [this.mappings[arguments[0]].call(this)]//"this" is the subview, but the model of the subivew is the same as the model of the parent. Only for childviews does the context change
+
         },
         function(truth,el){
-            console.log(truth)
             if (!truth) $(el).hide()
-            else $(el).show();
+            else $(el).css("display","");
+        },
+        function(truth,el){
+            if (!truth) $(el).hide()
+            else $(el).css("display","");
         }
     ),
     
