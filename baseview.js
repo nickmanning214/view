@@ -1,4 +1,3 @@
-
 function Directive(name,args,onBuild,onRender){
     this.name = name;
     this.args = args;
@@ -68,7 +67,6 @@ var directives = [
         "optional",
         function(){
             return [this.mappings[arguments[0]].call(this)]//"this" is the subview, but the model of the subivew is the same as the model of the parent. Only for childviews does the context change
-
         },
         function(truth,el){
             if (!truth) $(el).hide()
