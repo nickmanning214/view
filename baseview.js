@@ -13,6 +13,45 @@ Directive = Backbone.View.extend({
         this.build();
     }
 });
+
+Directive.OptionalWrap = Directive.extend({
+    name:"optionalwrap",
+    childInit:function(){
+       this.result = this.parentView.viewModel.get(this.val);
+
+
+        //The viewmodel of the featurepanel is updated when the model changes.
+        this.listenTo(this.parentView.viewModel,"change:"+this.val,function(){
+            this.result = this.parentView.viewModel.get(this.val);
+            this.render();
+        })
+        
+        this.wrapper = this.el;
+        this.childNodes = [].slice.call(this.el.childNodes, 0);
+        
+    },
+    build:function(){
+        if (!this.result) $(this.childNodes).unwrap();
+    },
+    render:function(){
+        if (!this.result){
+            $(this.childNodes).unwrap();
+        }
+        else {
+           if (!document.body.contains(this.childNodes[0])){
+                console.error("First child has to be in DOM");
+                //solution: add a dummy text node at beginning
+            }
+            else if (!document.body.contains(this.wrapper)){
+                this.childNodes[0].parentNode.insertBefore(this.wrapper,this.childNodes[0]);
+            }
+            for(var i=0;i<this.childNodes.length;i++){
+                this.wrapper.appendChild(this.childNodes[i])
+            }
+        }
+    }
+})
+
 Directive.Content = Directive.extend({
     name:"content",
     childInit:function(){
@@ -266,8 +305,8 @@ var BaseView = Backbone.View.extend({
         //Change templateVars->modelVars to templateVars->model.get("modelVar"), and set on the model
         _.extend(obj,_.mapObject(this.propMap,function(modelVar){
             
-            return model.get(modelVar);
-        }));
+            return this.model.get(modelVar);
+        }.bind(this)));
         
 
         _.extend(obj,_.mapObject(this.funcs,function(func){
