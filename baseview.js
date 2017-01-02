@@ -139,6 +139,7 @@ Directive.Map = Directive.extend({
             return childview;
         }.bind(this));
 
+
         var $children = $();
         this.childViews.forEach(function(childView,i){
             $children = $children.add(childView.el)
@@ -202,12 +203,9 @@ Directive.SubView = Directive.extend({
     name:"subview",
     childInit:function(){
         this.childMappings = this.parentView.mappings[this.val];
-        /*
-        debugger;
-        if (this.parentView.subViewImports[this.val] instanceof Backbone.View) this.ChildConstructor = this.parentView.subViewImports[this.val];
-        else this.ChildConstructor = this.parentView.subViewImports[this.val]();
-        */
-        this.ChildConstructor = this.parentView.subViewImports[this.val];
+
+        if (this.parentView.subViewImports[this.val].prototype instanceof Backbone.View) this.ChildConstructor = this.parentView.subViewImports[this.val];
+        else this.ChildConstructor = this.parentView.subViewImports[this.val].call(this.parentView);
         this.subViews = {};
     },
     build:function(){
@@ -221,6 +219,8 @@ Directive.SubView = Directive.extend({
         }
         _.extend(options,{model:this.parentView.model});
 
+        //element is nm-map, but this.name=subview. What?
+        console.log(this.name,this.$el[0].outerHTML)
         this.subViews[this.val] = new this.ChildConstructor(options);
         var classes = _.result(this.subViews[this.val],"className")
         if (classes){
@@ -252,7 +252,6 @@ var BaseView = Backbone.View.extend({
     constructor:function(options) {
         this.cid = _.uniqueId(this.tplid);
         this.templateString = $("#"+this.tplid).html();
-
         _.extend(this, _.pick(options, backboneViewOptions.concat(additionalViewOptions)));
 
         //Add this here so that it's available in className function
@@ -338,15 +337,22 @@ var BaseView = Backbone.View.extend({
 
         this.directives = {};
 
-        for (directiveName in Directive){
-            if (Directive[directiveName].prototype instanceof Directive){
-                 var elements = (this.$el)?$.makeArray(this.$el.find("[nm-"+Directive[directiveName].prototype.name+"]")):$.makeArray($(this.el.querySelectorAll("[nm-"+Directive[directiveName].prototype.name+"]")));
-                 if (elements.length) this.directives[Directive[directiveName].prototype.name] = elements.map(function(element){
-                    return new Directive[directiveName]({
-                        parentView:this,
-                        el:element
-                    })
-                }.bind(this)); 
+        for (var directiveName in Directive){
+            var __proto = Directive[directiveName].prototype
+            if (__proto instanceof Directive){ //because foreach will get more than just other directives
+                var name = __proto.name;
+                var elements = (this.$el)?$.makeArray(this.$el.find("[nm-"+name+"]")):$.makeArray($(this.el.querySelectorAll("[nm-"+name+"]")));
+                
+                
+                if (elements.length) {
+                    this.directives[name] = elements.map(function(element,i,elements){
+                        //on the second go-around for nm-map, directiveName somehow is called "SubView"
+                        return new Directive[directiveName]({
+                            parentView:this,
+                            el:element
+                        });
+                    }.bind(this)); 
+                }
             }
         }
 
