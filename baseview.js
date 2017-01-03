@@ -119,11 +119,22 @@ Directive.Map = Directive.extend({
         this.collection = this.parentView.viewModel.get(this.val.split(":")[0]);
         this.ChildView = this.parentView.childViewImports[this.val.split(":")[1]];
         this.childViewMappings = this.parentView.mappings[this.val.split(":")[1]];
+        //If there is an error here, it's possibly because you didn't include a mapping for this in the giant nested JSON in the parent parent parent parent parent view.
         
         this.listenTo(this.collection,"add",function(){
             this.collection = this.parentView.viewModel.get(this.val.split(":")[0]);
-            this.render();
+            this.renderAdd();
         });
+
+        this.listenTo(this.collection,"reset",function(){
+            this.collection = this.parentView.viewModel.get(this.val.split(":")[0]);            
+            this.renderReset();
+        })
+
+        this.listenTo(this.collection,"remove",function(){
+            this.collection = this.parentView.viewModel.get(this.val.split(":")[0]);            
+            this.renderRemove();
+        })
         
     },
     build:function(){
@@ -145,10 +156,18 @@ Directive.Map = Directive.extend({
             $children = $children.add(childView.el)
             childView.index = i;
         }.bind(this));
-        this.$el.replaceWith($children);
+        if ($children.length) {
+            this.$el.replaceWith($children);
+            this.$parent = $children.parent()
+        }
+        else{
+            this.$parent = this.$el.parent();
+        }
         this.$children = $children
     },
-    render:function(){
+    renderAdd:function(){
+
+        //update the childviews that already exist
         this.childViews.forEach(function(childView,i){
             childView.lastIndex = this.collection.length - i - 1;
             //This part is problematic because you will override 
@@ -175,8 +194,15 @@ Directive.Map = Directive.extend({
         this.childViews.forEach(function(childView,i){
             $children = $children.add(childView.el)
         }.bind(this));
-        this.$children.parent().empty().append($children);
+        this.$parent.empty().append($children);
         this.$children = $children;
+    },
+    renderReset:function(){
+        this.$parent.empty();
+    },
+    renderRemove:function(){
+        this.$children.last().remove();
+        this.$children = this.$parent.children();
     }
 });
 
@@ -220,7 +246,6 @@ Directive.SubView = Directive.extend({
         _.extend(options,{model:this.parentView.model});
 
         //element is nm-map, but this.name=subview. What?
-        console.log(this.name,this.$el[0].outerHTML)
         this.subViews[this.val] = new this.ChildConstructor(options);
         var classes = _.result(this.subViews[this.val],"className")
         if (classes){
