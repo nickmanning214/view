@@ -202,6 +202,7 @@ Directive.Map = Directive.extend({
     },
     renderRemove:function(){
         this.$children.last().remove();
+        this.childViews.splice(-1,1);
         this.$children = this.$parent.children();
     }
 });
