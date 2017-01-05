@@ -7,7 +7,7 @@ var Section = BaseView.extend({
     },
     className:function(){
         //should be
-        return this.getModelAttr("section-content");
+        return this.viewModel.get("section-content");
     },
     tagName:"section",
     subViewImports:{
