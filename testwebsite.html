@@ -1,0 +1,83 @@
+<html>
+    <head>
+        <script src="jquery.js"></script>
+        <script src="underscore.js"></script>
+        <script src="underscore-extend.js"></script>
+        <script src="backbone.js"></script>
+        <script src="BaseView.js"></script>
+        <script type="tpl" id="headertpl">
+            <h1 nm-content="h1"></h1>
+        </script>
+        <script type="tpl" id="navitemtpl">
+            <a nm-content="content"></a>
+        </script>
+        <script type="tpl" id="navtpl">
+            <nav nm-map="items:Item"></nav>
+        </script>
+        <script type="tpl" id="maintpl">
+            <div nm-subview="Header"></div>
+            <div nm-subview="Nav"></div>
+            <!--<div nm-subview="Content"></div>-->
+        </script>
+    </head>
+    <body>
+        <div id="placeholder"></div>
+        
+        <script>
+            MyModel = Backbone.Model.extend({
+                initialize:function(){
+                    this.set({categories : new Backbone.Collection([{name:"first"},{name:"second"}])})
+                }
+            })
+
+            var model = new MyModel({
+                name:"Website"
+            });
+
+            var NavItem = BaseView.extend({
+                tplid:"navitemtpl",
+                className:"nav-item",
+                tagName:"li"
+            })
+
+            var Nav = BaseView.extend({
+                tplid:"navtpl",
+                tagName:"nav",
+                childViewImports:{
+                    Item:NavItem
+                }
+            })
+
+            var Header = BaseView.extend({
+                tplid:"headertpl",
+                tagName:"header"
+            });
+
+            var View = BaseView.extend({
+                tplid:"maintpl",
+                tagName:"div",
+                subViewImports:{
+                    Header:Header,
+                    Nav:Nav
+                }
+            })
+
+            var view = new View({
+                model:model,
+                mappings:{
+                    Header:{
+                        h1:"name"
+                    },
+                    Nav:{
+                        items:"categories",
+                        Item:{
+                            content:"name"
+                        }
+                    }
+                }
+            });
+            $("#placeholder").replaceWith(view.el)
+        </script>
+
+    </body>
+</html>

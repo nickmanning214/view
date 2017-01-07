@@ -6,8 +6,10 @@ Directive = Backbone.View.extend({
     initialize:function(options){
         if (!this.name) console.error("Error: Directive requires a name in the prototype.");
         this.val = this.el.getAttribute("nm-"+this.name);
-        if (!options.parentView) console.error("Error: Directive requires a parentView passed as an option.");
-        this.parentView = options.parentView;
+        
+        //view is the view that implements this directive.
+        if (!options.view) console.error("Error: Directive requires a view passed as an option.");
+        this.view = options.view;
         if (!this.childInit) console.error("Error: Directive requires childInit in prototype.");
         this.childInit();
         this.build();
@@ -17,12 +19,12 @@ Directive = Backbone.View.extend({
 Directive.OptionalWrap = Directive.extend({
     name:"optionalwrap",
     childInit:function(){
-       this.result = this.parentView.viewModel.get(this.val);
+       this.result = this.view.viewModel.get(this.val);
 
 
         //The viewmodel of the featurepanel is updated when the model changes.
-        this.listenTo(this.parentView.viewModel,"change:"+this.val,function(){
-            this.result = this.parentView.viewModel.get(this.val);
+        this.listenTo(this.view.viewModel,"change:"+this.val,function(){
+            this.result = this.view.viewModel.get(this.val);
             this.render();
         })
         
@@ -55,9 +57,9 @@ Directive.OptionalWrap = Directive.extend({
 Directive.Content = Directive.extend({
     name:"content",
     childInit:function(){
-        this.content = this.parentView.viewModel.get(this.val);
-        this.listenTo(this.parentView.viewModel,"change:"+this.val,function(){
-            this.content = this.parentView.viewModel.get(this.val);
+        this.content = this.view.viewModel.get(this.val);
+        this.listenTo(this.view.viewModel,"change:"+this.val,function(){
+            this.content = this.view.viewModel.get(this.val);
             this.render();
         })
     },
@@ -72,9 +74,9 @@ Directive.Content = Directive.extend({
 Directive.Href = Directive.extend({
     name:"href",
     childInit:function(){
-        this.href = this.parentView.viewModel.get(this.val);
-        this.listenTo(this.parentView.viewModel,"change:"+this.val,function(){
-            this.href = this.parentView.viewModel.get(this.val);
+        this.href = this.view.viewModel.get(this.val);
+        this.listenTo(this.view.viewModel,"change:"+this.val,function(){
+            this.href = this.view.viewModel.get(this.val);
             this.render();
         })
     },
@@ -99,9 +101,9 @@ Directive.Href = Directive.extend({
 Directive.Src = Directive.extend({
     name:"src",
     childInit:function(){
-        this.src = this.parentView.viewModel.get(this.val);
-        this.listenTo(this.parentView.viewModel,"change:"+this.val,function(){
-            this.src = this.parentView.viewModel.get(this.val);
+        this.src = this.view.viewModel.get(this.val);
+        this.listenTo(this.view.viewModel,"change:"+this.val,function(){
+            this.src = this.view.viewModel.get(this.val);
             this.render();
         });
     },
@@ -116,23 +118,23 @@ Directive.Src = Directive.extend({
 Directive.Map = Directive.extend({
     name:"map",
     childInit:function(){
-        this.collection = this.parentView.viewModel.get(this.val.split(":")[0]);
-        this.ChildView = this.parentView.childViewImports[this.val.split(":")[1]];
-        this.childViewMappings = this.parentView.mappings[this.val.split(":")[1]];
+        this.collection = this.view.viewModel.get(this.val.split(":")[0]);
+        this.ChildView = this.view.childViewImports[this.val.split(":")[1]];
+        this.childViewMappings = this.view.mappings[this.val.split(":")[1]];
         //If there is an error here, it's possibly because you didn't include a mapping for this in the giant nested JSON in the parent parent parent parent parent view.
         
         this.listenTo(this.collection,"add",function(){
-            this.collection = this.parentView.viewModel.get(this.val.split(":")[0]);
+            this.collection = this.view.viewModel.get(this.val.split(":")[0]);
             this.renderAdd();
         });
 
         this.listenTo(this.collection,"reset",function(){
-            this.collection = this.parentView.viewModel.get(this.val.split(":")[0]);            
+            this.collection = this.view.viewModel.get(this.val.split(":")[0]);            
             this.renderReset();
         })
 
         this.listenTo(this.collection,"remove",function(){
-            this.collection = this.parentView.viewModel.get(this.val.split(":")[0]);            
+            this.collection = this.view.viewModel.get(this.val.split(":")[0]);            
             this.renderRemove();
         })
         
@@ -145,7 +147,8 @@ Directive.Map = Directive.extend({
                 model:childModel,
                 mappings:this.childViewMappings,
                 index:i,
-                lastIndex:this.collection.length - i - 1
+                lastIndex:this.collection.length - i - 1,
+                collection:this.collection
             });
             return childview;
         }.bind(this));
@@ -187,7 +190,8 @@ Directive.Map = Directive.extend({
                 model:this.collection.models[i],
                 mappings:this.childViewMappings,
                 index:i,
-                lastIndex:this.collection.length - i - 1
+                lastIndex:this.collection.length - i - 1,
+                collection:this.collection
             }));
         }
         var $children = $();
@@ -210,9 +214,9 @@ Directive.Map = Directive.extend({
 Directive.Optional = Directive.extend({
     name:"optional",
     childInit:function(){
-        this.result = this.parentView.mappings[this.val].call(this.parentView);
-        this.listenTo(this.parentView.viewModel,"change",function(){
-            this.result = this.parentView.mappings[this.val].call(this.parentView);
+        this.result = this.view.mappings[this.val].call(this.view);
+        this.listenTo(this.view.viewModel,"change",function(){
+            this.result = this.view.mappings[this.val].call(this.view);
             this.render();
         });
     },
@@ -227,12 +231,12 @@ Directive.Optional = Directive.extend({
 });
 
 
-Directive.Optional = Directive.extend({
+Directive.Enable = Directive.extend({
     name:"enable",
     childInit:function(){
-        this.result = this.parentView.mappings[this.val].call(this.parentView);
-        this.listenTo(this.parentView.viewModel,"change",function(){
-            this.result = this.parentView.mappings[this.val].call(this.parentView);
+        this.result = this.view.mappings[this.val].call(this.view);
+        this.listenTo(this.view.viewModel,"change",function(){
+            this.result = this.view.mappings[this.val].call(this.view);
             this.render();
         });
     },
@@ -249,13 +253,10 @@ Directive.Optional = Directive.extend({
 Directive.SubView = Directive.extend({
     name:"subview",
     childInit:function(){
-        this.childMappings = this.parentView.mappings[this.val];
+        this.childMappings = this.view.mappings[this.val];
 
-        if (this.parentView.subViewImports[this.val].prototype instanceof Backbone.View) this.ChildConstructor = this.parentView.subViewImports[this.val];
-        else this.ChildConstructor = this.parentView.subViewImports[this.val].call(this.parentView);
-        this.subViews = {};
-    },
-    build:function(){
+        if (this.view.subViewImports[this.val].prototype instanceof Backbone.View) this.ChildConstructor = this.view.subViewImports[this.val];
+        else this.ChildConstructor = this.view.subViewImports[this.val].call(this.view);
         var options = {};
            
         if (this.childMappings){
@@ -264,26 +265,30 @@ Directive.SubView = Directive.extend({
                 ,el:this.el
             })
         }
-        _.extend(options,{model:this.parentView.model});
+        _.extend(options,{model:this.view.model});
 
         //element is nm-map, but this.name=subview. What?
-        this.subViews[this.val] = new this.ChildConstructor(options);
-        var classes = _.result(this.subViews[this.val],"className")
+        this.subView = new this.ChildConstructor(options);
+        var classes = _.result(this.subView,"className")
         if (classes){
             classes.split(" ").forEach(function(cl){
-                this.subViews[this.val].el.classList.add(cl)
+                this.subView.el.classList.add(cl)
             }.bind(this))
         };
 
-        var attributes = _.result(this.subViews[this.val],"attributes");
+        var attributes = _.result(this.subView,"attributes");
         if (attributes){
             _.each(attributes,function(val,name){
-                this.subViews[this.val].el.setAttribute(name,val)    
+                this.subView.el.setAttribute(name,val)    
             }.bind(this))
         }
         
-        this.subViews[this.val].parent = this;
-        this.$el.replaceWith(this.subViews[this.val].el);
+        this.subView.parent = this.view;
+        this.subView.parentDirective = this;
+        
+    },
+    build:function(){
+        this.$el.replaceWith(this.subView.el);
     }
 })
 
@@ -320,7 +325,12 @@ var BaseView = Backbone.View.extend({
         //You can have each submodel trigger change event.
         
         //Whenever the model changes, update the viewModel by mapping properties of the model to properties of the view (assigned in mappings)
+        //Also, the attributes change. This can be done more elegantly
         this.listenTo(this.model,"change",this.updateContextObject);
+        this.listenTo(this.model,"change",function(){
+			this._setAttributes(_.extend({}, _.result(this, 'attributes')));
+		});
+        
         this.updateContextObject(this.model);
 
 
@@ -329,6 +339,8 @@ var BaseView = Backbone.View.extend({
         this.initDirectives();
         this.delegateEvents();
         
+        
+
 
         this.initialize.apply(this, arguments);
     },
@@ -394,7 +406,7 @@ var BaseView = Backbone.View.extend({
                     this.directives[name] = elements.map(function(element,i,elements){
                         //on the second go-around for nm-map, directiveName somehow is called "SubView"
                         return new Directive[directiveName]({
-                            parentView:this,
+                            view:this,
                             el:element
                         });
                     }.bind(this)); 
@@ -402,15 +414,7 @@ var BaseView = Backbone.View.extend({
             }
         }
 
-        /*
-        this.directives = directiveTypes.reduce(function(directives,type){
-            var elements = (this.$el)?$.makeArray(this.$el.find("[nm-"+type.name+"]")):$.makeArray($(this.el.querySelectorAll("[nm-"+type.name+"]")));
-            if (elements.length) directives[type.name] = elements.map(function(element){
-                return new Dir(type,element)
-            });
-            return directives;
-        }.bind(this),{});
-        */
+       
 
 
         
