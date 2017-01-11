@@ -301,8 +301,16 @@ var backboneViewOptions = ['model', 'collection', 'el', 'id', 'attributes', 'cla
 var additionalViewOptions = ['mappings','templateString','childViewImports','subViewImports','index','lastIndex']
 var BaseView = Backbone.View.extend({
     constructor:function(options) {
-        this.cid = _.uniqueId(this.tplid);
-        this.templateString = $("#"+this.tplid).html();
+        if (!options.jst){
+            this.cid = _.uniqueId(this.tplid);
+            this.templateString = $("#"+this.tplid).html();
+            this.jst = _.template(this.templateString)
+        }
+        else{
+            this.cid = _.uniqueId('view');
+            this.jst = options.jst;
+        }
+        
         _.extend(this, _.pick(options, backboneViewOptions.concat(additionalViewOptions)));
 
         //Add this here so that it's available in className function
@@ -420,7 +428,8 @@ var BaseView = Backbone.View.extend({
         
     },
     renderedTemplate:function(){
-        return _.template(this.templateString)(this.viewModel.attributes)
+        if (this.jst) return this.jst(this.viewModel.attributes);
+        else return _.template(this.templateString)(this.viewModel.attributes)
     },
     delegateEvents: function(events) {//http://stackoverflow.com/a/12193069/1763217
         var delegateEventSplitter = /^(\S+)\s*(.*)$/;
