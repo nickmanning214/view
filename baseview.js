@@ -301,14 +301,13 @@ var backboneViewOptions = ['model', 'collection', 'el', 'id', 'attributes', 'cla
 var additionalViewOptions = ['mappings','templateString','childViewImports','subViewImports','index','lastIndex']
 var BaseView = Backbone.View.extend({
     constructor:function(options) {
-        if (!options.jst){
+        if (!this.jst){
             this.cid = _.uniqueId(this.tplid);
             this.templateString = $("#"+this.tplid).html();
             this.jst = _.template(this.templateString)
         }
         else{
             this.cid = _.uniqueId('view');
-            this.jst = options.jst;
         }
         
         _.extend(this, _.pick(options, backboneViewOptions.concat(additionalViewOptions)));
